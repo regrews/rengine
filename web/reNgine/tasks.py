@@ -546,7 +546,9 @@ def subdomain_discovery(
 	# Gather all the tools' results in one single file. Write subdomains into
 	# separate files, and sort all subdomains.
 	run_command(
-		f'cat {self.results_dir}/subdomains_*.txt > {self.output_path}',
+		# also include user-imported subdomains (from_imported.txt), so a scan
+		# with an explicit target list and no discovery tools still works
+		f'cat {self.results_dir}/subdomains_*.txt {self.results_dir}/from_imported.txt 2>/dev/null > {self.output_path}; true',
 		shell=True,
 		history_file=self.history_file,
 		scan_id=self.scan_id,
@@ -2931,7 +2933,8 @@ def http_crawl(
 			continue
 
 		# Parse httpx output
-		host = line.get('host', '')
+		# httpx>=1.x puts the hostname in 'host' and the IP in 'host_ip'
+		host = line.get('host_ip') or line.get('host', '')
 		content_length = line.get('content_length', 0)
 		http_status = line.get('status_code')
 		http_url, is_redirect = extract_httpx_url(line)
@@ -3020,9 +3023,10 @@ def http_crawl(
 				subdomain,
 				subscan=self.subscan,
 				cdn=cdn)
-			self.notify(
-				fields={'IPs': f'• `{ip.address}`'},
-				add_meta_info=False)
+			if ip:
+				self.notify(
+					fields={'IPs': f'• `{ip.address}`'},
+					add_meta_info=False)
 
 		# Save subdomain and endpoint
 		if is_ran_from_subdomain_scan:
