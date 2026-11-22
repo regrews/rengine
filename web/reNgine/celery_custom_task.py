@@ -99,7 +99,7 @@ class RengineTask(Task):
 				# dalfox scan being part of vulnerability task
 				dependent_tasks = {
 					'dalfox_xss_scan': 'vulnerability_scan',
-					'crlfuzz': 'vulnerability_scan',
+					'crlfuzz_scan': 'vulnerability_scan',
 					'nuclei_scan': 'vulnerability_scan',
 					'nuclei_individual_severity_module': 'vulnerability_scan',
 					's3scanner': 'vulnerability_scan',
