@@ -1055,7 +1055,7 @@ def theHarvester(config, host, scan_history_id, activity_id, results_dir, ctx={}
 	output_path_json = f'{results_dir}/theHarvester.json'
 	theHarvester_dir = '/usr/src/github/theHarvester'
 	history_file = f'{results_dir}/commands.txt'
-	cmd  = f'python3 {theHarvester_dir}/theHarvester.py -d {host} -b all -f {output_path_json}'
+	cmd  = f'{theHarvester_dir}/.venv/bin/python {theHarvester_dir}/theHarvester.py -d {host} -b all -f {output_path_json}'
 
 	# Update proxies.yaml
 	proxy_query = Proxy.objects.all()

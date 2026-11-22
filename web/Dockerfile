@@ -34,6 +34,8 @@ RUN apt update -y && \
 
 # Install essential packages
 RUN apt install -y --no-install-recommends \
+    jq \
+    python3.10-venv \
     build-essential \
     cmake \
     geoip-bin \

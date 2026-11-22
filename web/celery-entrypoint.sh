@@ -104,6 +104,10 @@ then
   git clone https://github.com/FortyNorthSecurity/EyeWitness /usr/src/github/EyeWitness
   # pip install -r /usr/src/github/Eyewitness/requirements.txt
 fi
+# EyeWitness went Chromium-only in Aug 2025; this image ships firefox+geckodriver
+# and selenium 4.9.1, so pin the last Firefox-based release
+git -C /usr/src/github/EyeWitness fetch -q --tags || true
+git -C /usr/src/github/EyeWitness checkout -q v20230525.1
 
 # clone theHarvester
 if [ ! -d "/usr/src/github/theHarvester" ]
@@ -111,7 +115,19 @@ then
   echo "Cloning theHarvester"
   git clone https://github.com/laramies/theHarvester /usr/src/github/theHarvester
 fi
-python3 -m pip install -r /usr/src/github/theHarvester/requirements/base.txt
+# upstream >=4.7 needs Python >=3.11 and dropped theHarvester.py; this image has 3.10.
+# pin 4.6.0 and keep its deps in a venv so they do not clash with reNgine packages
+git -C /usr/src/github/theHarvester fetch -q --tags || true
+git -C /usr/src/github/theHarvester checkout -q 4.6.0
+dpkg -s python3.10-venv >/dev/null 2>&1 || (apt-get update -qq && apt-get install -y -qq python3.10-venv)
+if [ ! -x /usr/src/github/theHarvester/.venv/bin/pip ]
+then
+  rm -rf /usr/src/github/theHarvester/.venv
+  python3 -m venv /usr/src/github/theHarvester/.venv
+  /usr/src/github/theHarvester/.venv/bin/pip install -q -r /usr/src/github/theHarvester/requirements/base.txt
+fi
+# GooFuzz (OSINT dorks) needs jq
+command -v jq >/dev/null || (apt-get update -qq && apt-get install -y -qq jq)
 
 # clone vulscan
 if [ ! -d "/usr/src/github/scipag_vulscan" ]
@@ -183,6 +199,9 @@ then
   git clone https://github.com/m3n0sd0n4ld/GooFuzz.git /usr/src/github/goofuzz
   chmod +x /usr/src/github/goofuzz/GooFuzz
 fi
+# GooFuzz 2.x needs Google CSE API keys; 1.2.6 is what reNgine's flags target
+git -C /usr/src/github/goofuzz fetch -q --tags || true
+git -C /usr/src/github/goofuzz checkout -q 1.2.6
 
 # httpx seems to have issue, use alias instead!!!
 echo 'alias httpx="/go/bin/httpx"' >> ~/.bashrc
