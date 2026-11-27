@@ -51,6 +51,9 @@ urlpatterns = [
         auth_views.LogoutView.as_view(template_name='base/logout.html'),
         name='logout'),
     path(
+        'api/v1/penty/',
+        include('penty_api.urls')),
+    path(
         'api/',
         include(
             'api.urls',
