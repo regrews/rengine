@@ -323,7 +323,7 @@ class ScanTests(Fixture):
         body = self.client.get(f'{BASE}/scans/{scan.id}/').json()
         self.assertEqual(body['progress']['completed_tasks'], 1)
         self.assertEqual(body['progress']['total_tasks'], 3)
-        self.assertEqual(body['progress']['percent'], 33)
+        self.assertEqual(body['progress']['percent'], 50)  # 1 done + 1 running (half) of 3
         self.assertEqual(body['progress']['running_tasks'], ['http_crawl'])
         self.assertEqual(body['counts']['vulnerabilities'], 0)
 

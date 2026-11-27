@@ -346,11 +346,14 @@ def scan_progress(scan):
     finished = {a.name for a in activities if a.status not in ACTIVE_STATUSES}
     running = sorted({a.name for a in activities if a.status == RUNNING_TASK})
     done = len([t for t in engine_tasks if t in finished])
+    # A running engine task counts half: long single-task scans (e.g. nuclei only) would otherwise sit at 0%.
+    in_progress = len([t for t in engine_tasks if t in running and t not in finished])
     total = len(engine_tasks)
     if scan.scan_status == SUCCESS_TASK:
         percent = 100
     elif total:
-        percent = min(99, int(done * 100 / total)) if scan.scan_status in ACTIVE_STATUSES else int(done * 100 / total)
+        raw = int((done + 0.5 * in_progress) * 100 / total)
+        percent = min(99, raw) if scan.scan_status in ACTIVE_STATUSES else raw
     else:
         percent = 0
     return {
