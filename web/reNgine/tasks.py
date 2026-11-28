@@ -2426,6 +2426,15 @@ def nuclei_scan(self, urls=[], ctx={}, description=None):
 	tags = ','.join(tags)
 	nuclei_templates = nuclei_specific_config.get(NUCLEI_TEMPLATE)
 	custom_nuclei_templates = nuclei_specific_config.get(NUCLEI_CUSTOM_TEMPLATE)
+	# Penty: restrict nuclei to template ids (retest). Values are interpolated into a shell
+	# command, so anything that is not a plain template id is dropped.
+	import re as _re
+	nuclei_template_ids = [
+		str(t) for t in (nuclei_specific_config.get('template_ids') or [])
+		if _re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,99}', str(t))
+	][:20]
+	if len(nuclei_template_ids) != len(nuclei_specific_config.get('template_ids') or []):
+		logger.warning('nuclei template_ids: invalid entries ignored')
 	# severities_str = ','.join(severities)
 
 	# Get alive endpoints
@@ -2494,6 +2503,7 @@ def nuclei_scan(self, urls=[], ctx={}, description=None):
 	# cmd += f' -severity {severities_str}'
 	cmd += f' -timeout {str(timeout)}' if timeout and timeout > 0 else ''
 	cmd += f' -tags {tags}' if tags else ''
+	cmd += f' -id {",".join(nuclei_template_ids)}' if nuclei_template_ids else ''
 	cmd += f' -silent'
 	for tpl in templates:
 		cmd += f' -t {tpl}'
